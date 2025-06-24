@@ -3,11 +3,21 @@ from telegram import Bot, Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import asyncio
 import time
+import os
+import logging
 
 # 🔐 CONFIGURACIÓN
-API_KEY_OPENWEATHER = '932f1f40d296561a8a6abd67298f1163'
-CITY = 'Río Tercero,AR'
-TOKEN_TELEGRAM = '8118768924:AAHpxHKEzl7J92zPIE_3GyR_DPMdrPWEPFY'
+# Usar variables de entorno para mayor seguridad
+API_KEY_OPENWEATHER = os.getenv('API_KEY_OPENWEATHER', '932f1f40d296561a8a6abd67298f1163')
+CITY = os.getenv('CITY', 'Río Tercero,AR')
+TOKEN_TELEGRAM = os.getenv('TOKEN_TELEGRAM', '8118768924:AAHpxHKEzl7J92zPIE_3GyR_DPMdrPWEPFY')
+
+# 📝 Configurar logging para el servidor
+logging.basicConfig(
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    level=logging.INFO
+)
+logger = logging.getLogger(__name__)
 
 # 📱 LISTA DE PERSONAS QUE RECIBIRÁN EL MENSAJE
 # Agregá aquí los CHAT_ID de todas las personas que quieran recibir el clima
@@ -162,6 +172,7 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mensaje += "💡 También podés escribir cualquier mensaje y te diré el clima actual."
     
     await update.message.reply_text(mensaje, parse_mode='Markdown')
+    logger.info(f"Usuario {user.id} ({user.first_name}) inició el bot")
 
 # 🌤️ COMANDO /clima
 async def clima_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -171,8 +182,10 @@ async def clima_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         clima = obtener_clima()
         await update.message.reply_text(clima, parse_mode='Markdown')
+        logger.info(f"Clima consultado exitosamente por usuario {update.effective_user.id}")
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
+        logger.error(f"Error obteniendo clima: {e}")
 
 # 📖 COMANDO /ayuda
 async def ayuda_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -195,7 +208,8 @@ async def info_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     mensaje += "🤖 **Bot del Clima - Río Tercero**\n"
     mensaje += "📍 **Ciudad:** Río Tercero, Córdoba, Argentina\n"
     mensaje += "🌤️ **Datos:** OpenWeatherMap API\n"
-    mensaje += "📱 **Desarrollado con:** Python + python-telegram-bot\n\n"
+    mensaje += "📱 **Desarrollado con:** Python + python-telegram-bot\n"
+    mensaje += "☁️ **Hosting:** Render (24/7)\n\n"
     mensaje += "🕐 **Última actualización:** Datos en tiempo real\n"
     mensaje += "🌡️ **Unidades:** Celsius, métrico\n\n"
     mensaje += "💬 Para usar el bot, escribí `/clima` o cualquier mensaje."
@@ -207,8 +221,9 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Manejar mensajes de texto - responder con el clima"""
     message_type = update.message.chat.type
     text = update.message.text
+    user = update.effective_user
     
-    print(f'Usuario ({update.message.chat.id}) en {message_type}: "{text}"')
+    logger.info(f'Usuario {user.id} ({user.first_name}) en {message_type}: "{text}"')
     
     # Si es un comando, no hacer nada (ya se maneja con los handlers)
     if text.startswith('/'):
@@ -220,20 +235,22 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         clima = obtener_clima()
         await update.message.reply_text(clima, parse_mode='Markdown')
+        logger.info(f"Clima enviado exitosamente a usuario {user.id}")
     except Exception as e:
         await update.message.reply_text(f"❌ Error: {e}")
+        logger.error(f"Error enviando clima a usuario {user.id}: {e}")
 
 # ❌ MANEJAR ERRORES
 async def error_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
     """Manejar errores del bot"""
-    print(f'Error: {context.error}')
+    logger.error(f'Error: {context.error}')
     if update:
         await update.message.reply_text("❌ Ocurrió un error. Intentá de nuevo más tarde.")
 
-# �� FUNCIÓN PRINCIPAL
+# 🚀 FUNCIÓN PRINCIPAL
 def main():
     """Función principal del bot"""
-    print("🚀 Iniciando bot del clima...")
+    logger.info("🚀 Iniciando bot del clima...")
     
     # Crear la aplicación
     app = Application.builder().token(TOKEN_TELEGRAM).build()
@@ -250,9 +267,8 @@ def main():
     # Agregar handler de errores
     app.add_error_handler(error_handler)
     
-    print("✅ Bot iniciado correctamente!")
-    print("📱 El bot está listo para recibir mensajes...")
-    print("🛑 Presioná Ctrl+C para detener el bot")
+    logger.info("✅ Bot iniciado correctamente!")
+    logger.info("📱 El bot está listo para recibir mensajes...")
     
     # Iniciar el bot
     app.run_polling(poll_interval=1)
@@ -262,6 +278,6 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print("\n🛑 Bot detenido por el usuario")
+        logger.info("🛑 Bot detenido por el usuario")
     except Exception as e:
-        print(f"\n❌ Error al iniciar el bot: {e}")
+        logger.error(f"❌ Error al iniciar el bot: {e}")
