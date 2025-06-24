@@ -159,7 +159,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**ValenOl** - [@ValenOl](https://github.com/ValenOl)
+**Valentin Olivero** - [@ValenOl](https://github.com/ValenOl)
 
 ## 🙏 Agradecimientos
 
@@ -170,4 +170,4 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ---
 
-⭐ Si te gustó este proyecto, ¡dale una estrella en GitHub! 
+⭐ Si te gustó este proyecto, ¡dale una estrella en GitHub!
