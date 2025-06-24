@@ -112,7 +112,7 @@ Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más det
 
 ## 👨‍💻 Autor
 
-**Tu Nombre** - [@tu-usuario](https://github.com/tu-usuario)
+Valentin Olivero
 
 ## 🙏 Agradecimientos
 
